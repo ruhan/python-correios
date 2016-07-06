@@ -22,15 +22,19 @@ from datetime import datetime
 
 class Status(object):
     re_localizacao_nacional = re.compile(r'(?P<correios>.*) - (?P<cidade>.*)/(?P<estado>\w{2})')
-    re_localizacao_internacional = re.compile(r'(?P<pais>.*)')
+    re_localizacao_nacional_curta = re.compile(r'(?P<cidade>.*)/(?P<estado>\w{2})')
+    re_localizacao_internacional = re.compile(r'(?P<pais>.*) - .*')
     # http://acheirelevante.blogspot.com.br/2012/02/significado-de-siglas-utilizadas-pelo.html
 
     def __init__(self, *args):
-	args = [x.strip() for x in args]
         self.atualizacao = datetime.strptime(args[0], '%d/%m/%Y %H:%M')
+        self.pais = 'BRASIL'
+
         try:
             self.agencia, self.cidade, self.estado = self.re_localizacao_nacional.match(args[1]).groups()
-            self.pais = 'BRASIL'
+        except AttributeError:
+            self.agencia = ''
+            self.cidade, self.estado = self.re_localizacao_nacional_curta.match(args[1]).groups()
         except AttributeError:
             self.agencia = self.cidade = self.estado = None
             self.pais = self.re_localizacao_internacional.match(args[1]).groups()[0]
